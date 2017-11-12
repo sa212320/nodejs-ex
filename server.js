@@ -1,16 +1,15 @@
 //  OpenShift sample Node application
 var express = require('express'),
     app     = express(),
-    morgan  = require('morgan');
+    server = require('http').Server(app),
+    morgan  = require('morgan'),
+    io = require('socket.io')(server);
     
 Object.assign=require('object-assign')
 
-app.engine('html', require('ejs').renderFile);
-app.use(morgan('combined'))
-
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
-    ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
-    mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL,
+    ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
+    mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL || 'mongodb://localhost:27017/forfish',
     mongoURLLabel = "";
 
 if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
@@ -56,37 +55,35 @@ var initDb = function(callback) {
   });
 };
 
+app.engine('html', require('ejs').renderFile);
+server.listen(port, ip);
+
+
 app.get('/', function (req, res) {
-  // try to initialize the db on every request if it's not already
-  // initialized.
-  if (!db) {
-    initDb(function(err){});
-  }
-  if (db) {
-    var col = db.collection('counts');
-    // Create a document with request IP and current time of request
-    col.insert({ip: req.ip, date: Date.now()});
-    col.count(function(err, count){
-      res.render('index.html', { pageCountMessage : count, dbInfo: dbDetails });
-    });
-  } else {
-    res.render('index.html', { pageCountMessage : null});
-  }
+  res.render('index.html', { socketUrl: ip, socketPort: port});
 });
 
 app.get('/pagecount', function (req, res) {
+  res.send(mongoURL);
   // try to initialize the db on every request if it's not already
   // initialized.
-  if (!db) {
-    initDb(function(err){});
-  }
-  if (db) {
-    db.collection('counts').count(function(err, count ){
-      res.send('{ pageCount: ' + count + '},'+mongoURL);
-    });
-  } else {
-    res.send('{ pageCount: -1 }' + mongoURL);
-  }
+  // if (!db) {
+  //   initDb(function(err){});
+  // }
+  // if (db) {
+  //   db.collection('counts').count(function(err, count ){
+  //     res.send('{ pageCount: ' + count + '},'+mongoURL);
+  //   });
+  // } else {
+    
+  // }
+});
+
+io.on('connection', function (socket) {
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
 });
 
 // error handling
@@ -99,7 +96,7 @@ initDb(function(err){
   console.log('Error connecting to Mongo. Message:\n'+err);
 });
 
-app.listen(port, ip);
+
 console.log('Server running on http://%s:%s', ip, port);
 console.log('Mongo running on http://%s', mongoURL);
 
