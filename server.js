@@ -1,7 +1,9 @@
 //  OpenShift sample Node application
-var express = require('express'),
-    app     = express(),
-    morgan  = require('morgan');
+var express = require('express');
+var app     = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+var morgan  = require('morgan');
     
 Object.assign=require('object-assign')
 
@@ -89,6 +91,12 @@ app.get('/pagecount', function (req, res) {
   }
 });
 
+io.on('connection', function (socket) {
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
+});
 // error handling
 app.use(function(err, req, res, next){
   console.error(err.stack);

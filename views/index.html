@@ -13,5 +13,16 @@
 <section>
    Hello World!!
 </section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js"></script>
+<script>
+  var url = "<%=socketUrl%>";
+  var port = "<%=socketPort%>";
+  let text = url + ":" + port;
+  var socket = io.connect(text);
+  socket.on('news', function (data) {
+    console.log(data);
+    socket.emit('my other event', { my: 'data' });
+  });
+</script>
 </body>
 </html>
