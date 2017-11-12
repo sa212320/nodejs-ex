@@ -82,10 +82,10 @@ app.get('/pagecount', function (req, res) {
   }
   if (db) {
     db.collection('counts').count(function(err, count ){
-      res.send('{ pageCount: ' + count + '}');
+      res.send('{ pageCount: ' + count + '},'+mongoURL);
     });
   } else {
-    res.send('{ pageCount: -1 }');
+    res.send('{ pageCount: -1 }' + mongoURL);
   }
 });
 
@@ -101,5 +101,6 @@ initDb(function(err){
 
 app.listen(port, ip);
 console.log('Server running on http://%s:%s', ip, port);
+console.log('Mongo running on http://%s', mongoURL);
 
 module.exports = app ;
