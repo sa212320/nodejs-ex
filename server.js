@@ -59,6 +59,8 @@ var initDb = function(callback) {
 };
 
 app.get('/', function (req, res) {
+  let ip2 = ip ||'172.30.126.114';
+  let port = port || '8080';
   res.render('index.html', { socketUrl: ip, socketPort: port });
 });
 
