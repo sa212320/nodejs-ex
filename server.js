@@ -1,8 +1,7 @@
 //  OpenShift sample Node application
 var express = require('express');
 var app     = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+var io = require('socket.io').listen(8000);
 var morgan  = require('morgan');
     
 Object.assign=require('object-assign')
@@ -59,9 +58,7 @@ var initDb = function(callback) {
 };
 
 app.get('/', function (req, res) {
-  let ip2 = ip ||'172.30.126.114';
-  let port2 = port || '8080';
-  res.render('index.html', { socketUrl: ip2, socketPort: port2 });
+  res.render('index.html');
 });
 
 app.get('/pagecount', function (req, res) {
